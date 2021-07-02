@@ -50,20 +50,20 @@ end
 
 minetest.register_on_player_receive_fields(function(player, formname, fields)
   -- print("Formname: "..formname)
-	local name = player:get_player_name()
+	local player_name = player:get_player_name()
 	if fields.welcome_start_tour or fields.university_guide_pervious then
 		minetest.after(1, function()
-			minetest.show_formspec(name, "keyboard_guide_page", fun_formspec(player,"keyboard_guide"))
+			minetest.show_formspec(player_name, "keyboard_guide_page", fun_formspec(player,"keyboard_guide"))
 		end)
 		return
   elseif fields.keyboard_guide_pervious then
 		minetest.after(1, function()
-			minetest.show_formspec(name, "welcome_page", fun_formspec(player, "welcome"))
+			minetest.show_formspec(player_name, "welcome_page", fun_formspec(player, "welcome"))
 		end)
 		return
   elseif fields.keyboard_guide_next then
 		minetest.after(1, function()
-			minetest.show_formspec(name, "university_page", fun_formspec(player, "university_guide"))
+			minetest.show_formspec(player_name, "university_page", fun_formspec(player, "university_guide"))
 		end)
 		return
   -- else
@@ -80,20 +80,20 @@ end)
 minetest.register_chatcommand('help_info', {
 	description = "test2",
 	params = '<welcome_page>',
-	func = function(name, params)
+	func = function(player_name, params)
 		params = params:split(',')
 		local directTo = params[1] or 'do nothing'
 		if directTo == "welcome_page" or directTo == "keyboard_guide" or directTo == "university_guide" then
 			if directTo == "welcome_page" then
-				minetest.show_formspec(name, "welcome_page", fun_formspec(player, "welcome"))
+				minetest.show_formspec(player_name, "welcome_page", fun_formspec(player, "welcome"))
 			elseif directTo == "keyboard_guide" then
 				minetest.show_formspec(name, "keyboard_guide_page", fun_formspec(player,"keyboard_guide"))
 			elseif directTo == "university_guide" then
-				minetest.show_formspec(name, "university_page", fun_formspec(player, "university_guide"))
+				minetest.show_formspec(player_name, "university_page", fun_formspec(player, "university_guide"))
 			end
-			minetest.chat_send_player(name, 'Direct to: '..directTo)
+			-- minetest.chat_send_player(player_name, 'Direct to: '..directTo)
 		else
-			minetest.chat_send_player(name, 'Invalid command, please try "welcome_page", "keyboard_guide" or "university_guide".')
+			minetest.chat_send_player(player_name, 'Invalid command, please try "welcome_page", "keyboard_guide" or "university_guide".')
 		end
 	end,
 })
