@@ -14,6 +14,7 @@ tiles = {"table_wood.png"},
 			{0.4375, -0.5, 0.5, 0.5, 0.5, 0.4375}, -- wood_table_Right_Top
 		}
 	},
+	walkable = false,
 })
 
 local floor, pi = math.floor, math.pi
@@ -288,8 +289,22 @@ minetest.register_node("university:whiteboard", {
 	},
 	groups = {oddly_breakable_by_hand=3},
 	on_rotate = false,
+	walkable = false,
 	after_place_node = whiteboard.after_place,
 	on_rightclick = whiteboard.on_rightclick,
 	on_destruct = whiteboard.on_destruct,
 	on_dig = whiteboard.on_dig
+})
+
+minetest.register_node('university:lobby_table', {
+  description = 'This is lobby_table',
+  drawtype = 'mesh',
+  mesh = 'lobby_table.obj',
+  tiles = {'lobby_table_texture.jpg'},
+  paramtype = 'light',
+  paramtype2 = 'facedir',
+	inventory_image = "lobby_table_inv.png",
+	wield_image = "lobby_table_inv.png",
+	walkable = false,
+	groups = {oddly_breakable_by_hand = 3},
 })
