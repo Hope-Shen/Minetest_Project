@@ -17,6 +17,46 @@ tiles = {"table_wood.png"},
 	walkable = false,
 })
 
+minetest.register_node('university:lobby_table', {
+  description = 'This is lobby_table',
+  drawtype = 'mesh',
+  mesh = 'lobby_table.obj',
+  tiles = {'lobby_table_texture.jpg'},
+  paramtype = 'light',
+  paramtype2 = 'facedir',
+	inventory_image = "lobby_table_inv.png",
+	wield_image = "lobby_table_inv.png",
+	walkable = false,
+	groups = {oddly_breakable_by_hand = 3},
+})
+
+minetest.register_node("university:blackboard_top", {
+	description = "This is top of blackboard",
+	tiles = {"blackboard_top.png"},
+	groups = {oddly_breakable_by_hand=3},
+	drawtype = "nodebox",
+	paramtype = "light",
+	walkable = false,
+})
+
+minetest.register_node("university:blackboard_bottom_chalk", {
+	description = "This is bottom of blackboard with chalk",
+	tiles = {"blackboard_bottom_chalk.png"},
+	groups = {oddly_breakable_by_hand=3},
+	drawtype = "nodebox",
+	paramtype = "light",
+	walkable = false,
+})
+
+minetest.register_node("university:blackboard_bottom", {
+	description = "This is bottom of blackboard",
+	tiles = {"blackboard_bottom.png"},
+	groups = {oddly_breakable_by_hand=3},
+	drawtype = "nodebox",
+	paramtype = "light",
+	walkable = false,
+})
+
 local floor, pi = math.floor, math.pi
 local vadd = vector.add
 local whiteboard = {}
@@ -294,17 +334,4 @@ minetest.register_node("university:whiteboard", {
 	on_rightclick = whiteboard.on_rightclick,
 	on_destruct = whiteboard.on_destruct,
 	on_dig = whiteboard.on_dig
-})
-
-minetest.register_node('university:lobby_table', {
-  description = 'This is lobby_table',
-  drawtype = 'mesh',
-  mesh = 'lobby_table.obj',
-  tiles = {'lobby_table_texture.jpg'},
-  paramtype = 'light',
-  paramtype2 = 'facedir',
-	inventory_image = "lobby_table_inv.png",
-	wield_image = "lobby_table_inv.png",
-	walkable = false,
-	groups = {oddly_breakable_by_hand = 3},
 })
