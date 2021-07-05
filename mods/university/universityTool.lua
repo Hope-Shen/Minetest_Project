@@ -335,3 +335,16 @@ minetest.register_node("university:whiteboard", {
 	on_destruct = whiteboard.on_destruct,
 	on_dig = whiteboard.on_dig
 })
+
+minetest.register_node('university:computer', {
+  description = 'This is computer',
+  drawtype = 'mesh',
+  mesh = 'computer.obj',
+  tiles = {'computer_texture.png'},
+  paramtype = 'light',
+  paramtype2 = 'facedir',
+	inventory_image = "computer_inv.png",
+	wield_image = "computer_inv.png",
+	walkable = false,
+	groups = {oddly_breakable_by_hand = 3},
+})
