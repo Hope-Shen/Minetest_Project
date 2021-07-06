@@ -14,7 +14,6 @@ tiles = {"table_wood.png"},
 			{0.4375, -0.5, 0.5, 0.5, 0.5, 0.4375}, -- wood_table_Right_Top
 		}
 	},
-	walkable = false,
 })
 
 minetest.register_node('university:lobby_table', {
@@ -26,7 +25,7 @@ minetest.register_node('university:lobby_table', {
   paramtype2 = 'facedir',
 	inventory_image = "lobby_table_inv.png",
 	wield_image = "lobby_table_inv.png",
-	walkable = false,
+	buildable_to = false,
 	groups = {oddly_breakable_by_hand = 3},
 })
 
@@ -36,7 +35,7 @@ minetest.register_node("university:blackboard_top", {
 	groups = {oddly_breakable_by_hand=3},
 	drawtype = "nodebox",
 	paramtype = "light",
-	walkable = false,
+	buildable_to = false,
 })
 
 minetest.register_node("university:blackboard_bottom_chalk", {
@@ -45,7 +44,7 @@ minetest.register_node("university:blackboard_bottom_chalk", {
 	groups = {oddly_breakable_by_hand=3},
 	drawtype = "nodebox",
 	paramtype = "light",
-	walkable = false,
+	buildable_to = false,
 })
 
 minetest.register_node("university:blackboard_bottom", {
@@ -54,7 +53,7 @@ minetest.register_node("university:blackboard_bottom", {
 	groups = {oddly_breakable_by_hand=3},
 	drawtype = "nodebox",
 	paramtype = "light",
-	walkable = false,
+	buildable_to = false,
 })
 
 local floor, pi = math.floor, math.pi
@@ -245,6 +244,10 @@ minetest.register_on_player_receive_fields(function(player, formname, fields)
 	local p2 = node.param2 - 2
 	local	sign_pos = wall_sign_positions
 
+        if not p2 or p2 > 3 or p2 < 0 then
+		return
+	end
+
 	local sign
 	for _, obj in pairs(objects_inside_radius(pos)) do
 		local ent = obj:get_luaentity()
@@ -297,7 +300,7 @@ end
 
 local function is_owner(pos, name)
 	local owner = minetest.get_meta(pos):get_string("owner")
-	if owner == "" or owner == name or minetest.check_player_privs(name, "protection_bypass") then
+	if owner == "" or owner == name then
 		return true
 	end
 	return false
@@ -318,33 +321,18 @@ minetest.register_node("university:whiteboard", {
 	tiles = {"whiteboard.png"},
 	inventory_image = "whiteboard.png",
 	wield_image = "whiteboard.png",
+	groups = {oddly_breakable_by_hand=3},
 	drawtype = "nodebox",
 	paramtype = "light",
 	paramtype2 = "wallmounted",
 	node_box = {
 		type = "wallmounted",
-		wall_top = {-0.5, 0.4375, -0.5, 0.5, 0.5, 0.5}, -- Ceiling
-		wall_bottom    = {-0.5, -0.5, -0.5, 0.5, -0.4375, 0.5}, -- Floor
 		wall_side   = {-0.5, -0.3125, -0.4375, -0.4375, 0.3125, 0.4375}, -- Wall
 	},
-	groups = {oddly_breakable_by_hand=3},
 	on_rotate = false,
-	walkable = false,
+	buildable_to = false,
 	after_place_node = whiteboard.after_place,
 	on_rightclick = whiteboard.on_rightclick,
 	on_destruct = whiteboard.on_destruct,
 	on_dig = whiteboard.on_dig
-})
-
-minetest.register_node('university:computer', {
-  description = 'This is computer',
-  drawtype = 'mesh',
-  mesh = 'computer.obj',
-  tiles = {'computer_texture.png'},
-  paramtype = 'light',
-  paramtype2 = 'facedir',
-	inventory_image = "computer_inv.png",
-	wield_image = "computer_inv.png",
-	walkable = false,
-	groups = {oddly_breakable_by_hand = 3},
 })
