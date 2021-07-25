@@ -1,0 +1,125 @@
+mg_flags = nocaves, nodungeons, light, nodecorations, biomes, ores
+mg_biome_np_humidity = {
+	lacunarity = 2
+	persistence = 0.5
+	scale = 50
+	offset = 50
+	flags = defaults
+	spread = (1000,1000,1000)
+	seed = 842
+	octaves = 3
+}
+seed = 12864662285690282524
+mg_biome_np_heat_blend = {
+	lacunarity = 2
+	persistence = 1
+	scale = 1.5
+	offset = 0
+	flags = defaults
+	spread = (8,8,8)
+	seed = 13
+	octaves = 2
+}
+mg_biome_np_heat = {
+	lacunarity = 2
+	persistence = 0.5
+	scale = 50
+	offset = 50
+	flags = defaults
+	spread = (1000,1000,1000)
+	seed = 5349
+	octaves = 3
+}
+mapgen_limit = 31000
+mg_biome_np_humidity_blend = {
+	lacunarity = 2
+	persistence = 1
+	scale = 1.5
+	offset = 0
+	flags = defaults
+	spread = (8,8,8)
+	seed = 90003
+	octaves = 2
+}
+mg_name = flat
+water_level = 1
+chunksize = 5
+mgflat_np_dungeons = {
+	lacunarity = 2
+	persistence = 0.8
+	scale = 0.5
+	offset = 0.9
+	flags = defaults
+	spread = (500,500,500)
+	seed = 0
+	octaves = 2
+	}
+mgflat_np_terrain = {
+	lacunarity = 2
+	persistence = 0.6
+	scale = 1
+	offset = 0
+	flags = defaults
+	spread = (600,600,600)
+	seed = 7244
+	octaves = 5
+	}
+mgflat_cavern_taper = 256
+mgflat_cavern_limit = -256
+mgflat_lake_threshold = -0.45
+mgflat_np_cavern = {
+	lacunarity = 2
+	persistence = 0.63
+	scale = 1
+	offset = 0
+	flags = defaults
+	spread = (384,128,384)
+	seed = 723
+	octaves = 5
+	}
+mgflat_lake_steepness = 48
+mgflat_ground_level = 8
+mgflat_large_cave_num_min = 0
+mgflat_spflags = nolakes, nohills, nocaverns
+mgflat_np_cave1 = {
+	lacunarity = 2
+	persistence = 0.5
+	scale = 12
+	offset = 0
+	flags = defaults
+	spread = (61,61,61)
+	seed = 52534
+	octaves = 3
+	}
+mgflat_np_filler_depth = {
+	lacunarity = 2
+	persistence = 0.7
+	scale = 1.2
+	offset = 0
+	flags = defaults
+	spread = (150,150,150)
+	seed = 261
+	octaves = 3
+	}
+mgflat_small_cave_num_max = 0
+mgflat_large_cave_depth = -33
+mgflat_np_cave2 = {
+	lacunarity = 2
+	persistence = 0.5
+	scale = 12
+	offset = 0
+	flags = defaults
+	spread = (67,67,67)
+	seed = 10325
+	octaves = 3
+	}
+mgflat_small_cave_num_min = 0
+mgflat_dungeon_ymax = 31000
+mgflat_dungeon_ymin = -31000
+mgflat_cave_width = 0.09
+mgflat_large_cave_num_max = 2
+mgflat_large_cave_flooded = 0.5
+mgflat_cavern_threshold = 0.7
+mgflat_hill_threshold = 0.45
+mgflat_hill_steepness = 64
+[end_of_params]

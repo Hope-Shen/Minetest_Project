@@ -1,1 +1,1 @@
-minetest.exe --server --worldname University campus
+minetest.exe --server --worldname Minetest Classroom

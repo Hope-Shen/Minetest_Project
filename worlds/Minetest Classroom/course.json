@@ -1,0 +1,17 @@
+[
+	{
+		"attendance_student": "singleplayer",
+		"courses": "COMP0001 IBM x UCL",
+		"enroll_students": "hope,kat,singleplayer"
+	},
+	{
+		"attendance_student": "111",
+		"courses": "COMP0002 IBM Cloud",
+		"enroll_students": "111,kat,333"
+	},
+	{
+		"attendance_student": "aaa",
+		"courses": "COMP0003 Machine Learning",
+		"enroll_students": "444,singleplayer,555"
+	}
+]
