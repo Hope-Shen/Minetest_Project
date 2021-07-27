@@ -3,13 +3,6 @@ minetest.register_privilege("teacher", {
 	give_to_singleplayer = false
 })
 
--- local http_api = minetest.request_http_api()
--- if not http_api then
--- 	print("ERROR: in minetest.conf, this mod must be in secure.http_mods!")
--- end
---
-
-
 local computer = {}
 local column_name = {
 	{
@@ -25,64 +18,98 @@ local world_path = minetest.get_worldpath()
 
 local online_students = {}
 local course_select_id = ""
-local student_select_id = ""
+local online_student_select_id = ""
+local attendance_student_select_id = ""
 
-
--- Read courses
-local function load_JsonFile()
+-- Read API
+local function load_API()
 	courses = {}
 	enrolled = {}
 	attendance = {}
-	local file, err = io.open(world_path .. "/course.json", "r")
-	if err then return end
-  local json_content = minetest.parse_json(file:read("*a"))
-	file:close()
-
-	for i, j_str in pairs(json_content) do
-    courses[#courses + 1 ] = j_str.courses
-    enrolled[#enrolled + 1 ] = j_str.enroll_students
-    attendance[#attendance + 1 ] = j_str.attendance_student
-    enrolled[j_str.courses] = j_str.enroll_students
-	end
+	http_api.fetch({
+		url = "https://localhost:44357/api/course", method="GET"
+	}, function (res)
+		local api_content = minetest.parse_json(minetest.parse_json(dump(res.data)))
+		for i, j_str in pairs(api_content) do
+			courses[#courses + 1 ] = j_str.courseId .. ' ' .. j_str.courseName
+		end
+	end)
+	http_api.fetch({
+		url = "https://localhost:44357/api/enrollment",
+		method="GET"
+	}, function (res)
+		local api_content = minetest.parse_json(minetest.parse_json(dump(res.data)))
+		for i, j_str in pairs(api_content) do
+			enrolled[#enrolled + 1 ] = j_str.studentName
+		end
+	end)
+	http_api.fetch({
+		url = "https://localhost:44357/api/attendance",
+		method="GET"
+	}, function (res)
+		local api_content = minetest.parse_json(minetest.parse_json(dump(res.data)))
+		for i, j_str in pairs(api_content) do
+			attendance[#attendance + 1 ] = j_str.studentName
+		end
+	end)
 end
 
 -- Write student attendance
-local function save_attendance()
-	local str_save = {}
+local function save_attendance(course_select_id, online_student_select_id)
+	local post_data= "{\"courseId\":\"".. courses[course_select_id]:sub(1, 8) .."\",\"studentId\":\"".. string.split(online_student_select_id, "-")[1] .."\"}"
+	-- http_api.fetch({
+	-- 	url = "https://localhost:44357/api/attendance/",
+	-- 	method="POST",
+	-- 	extra_headers = { "Content-Type: application/json" },
+	-- 	data = post_data
+	-- }, function (res)
+	-- 	-- print(dump(res))
+	-- 	if res.succeeded then
+	-- 		print('[Success] Take attendance: '.. online_student_select_id ..', course: '.. courses[course_select_id])
+	-- 	end
+	-- end)
+end
 
-	for i = 1,#courses,1
-	do
-		table.insert(str_save, minetest.write_json({courses = courses[i], enroll_students = enrolled[i], attendance_student = attendance[i]}))
+-- Remove student attendance
+local function remove_attendance(course_select_id, attendance_student_select_id)
+	local post_data= "{\"courseId\":\"".. courses[course_select_id]:sub(1, 8) .."\",\"studentId\":\"".. string.split(attendance_student_select_id, "-")[1] .."\",\"Date\":\""..os.date('%Y-%m-%d').."\"}"
+	-- http_api.fetch({
+	-- 	url = "https://localhost:44357/api/attendance/",
+	-- 	method="DELETE",
+	-- 	extra_headers = { "Content-Type: application/json" },
+	-- 	data = post_data
+	-- }, function (res)
+	-- 	print(dump(res))
+	-- 	if res.succeeded then
+	-- 		print('[Success] Remove attendance: '.. online_student_select_id ..', course: '.. courses[course_select_id])
+	-- 	end
+	-- end)
+end
+
+local function check_enorlled(course_select_id, student)
+	if enrolled[course_select_id] then
+		local all_enrolled = string.split(enrolled[course_select_id], ",")
+	  for i, col in pairs(all_enrolled) do
+	    if student == col then
+	      return true
+	    end
+	  end
 	end
 
-	local file, err = io.open(world_path .. "/course.json", "w")
-	if err then return end
-	file:write("[".. table.concat(str_save,",").."]")
-	file:close()
-end
-
-
-local function check_enorlled(course_select, student)
-	-- minetest.chat_send_player('singleplayer', 'bbb: '..enrolled[course_select]..', '.. student)
-  local all_enrolled = string.split(enrolled[course_select], ",")
-  for i, col in pairs(all_enrolled) do
-    if student == col then
-      return true
-    end
-  end
   return false
 end
 
-local function check_attendant(course_select, student)
-  local all_attendance = string.split(attendance[course_select], ",")
-	for i, col in pairs(all_attendance) do
-    if student == col then
-      return true
-    end
-  end
+local function check_attendant(course_select_id, student)
+	if attendance[course_select_id] then
+	  local all_attendance = string.split(attendance[course_select_id], ",")
+		for i, col in pairs(all_attendance) do
+	    if student == col then
+	      return true
+	    end
+	  end
+	end
   return false
 end
-
 
 local function computer_formspec(clicker, course_select, student_select)
 	local size = { "size[11.5,8]" }
@@ -96,18 +123,18 @@ local function computer_formspec(clicker, course_select, student_select)
   -- Online student zone
   table.insert(size, "label[0, 1.5;Online Students:]")
 
-  local fs = {}
+  local fs_col = {}
   for i, col in pairs(column_name) do
-		fs[#fs + 1] = ";color;text,align=center"
+		fs_col[#fs_col + 1] = ";color;text,align=center"
 		if i == 1 then
-			fs[#fs + 1] = ",padding=2"
+			fs_col[#fs_col + 1] = ",padding=2"
 		end
 	end
-	fs[#fs + 1] = "]"
+	fs_col[#fs_col + 1] = "]"
 
-  table.insert(size, "tablecolumns[color;text,width=10".. table.concat(fs, "")..",width=5]")
+  table.insert(size, "tablecolumns[color;text,width=10".. table.concat(fs_col, "")..",width=5]")
 
-  fs = {}
+  local fs = {}
   for i, col in pairs(column_name) do
 		fs[#fs + 1] = ",," .. col.title
 	end
@@ -123,9 +150,8 @@ local function computer_formspec(clicker, course_select, student_select)
 			  online_students[#online_students + 1] = player:get_player_name()
 		end
   end
-  table.sort(online_students)
 
-	-- minetest.chat_send_player('singleplayer', 'qq: '..courses[course_select])
+  table.sort(online_students)
 
 	for i, student in pairs(online_students) do
     local color, value
@@ -143,10 +169,9 @@ local function computer_formspec(clicker, course_select, student_select)
 	end
 
 	fs[#fs + 1] = ";"
-	fs[#fs + 1] = student_select_id
+	fs[#fs + 1] = online_student_select_id
 
-	-- minetest.chat_send_player('singleplayer', 'fs: '.. table.concat(fs, ""))
-  table.insert(size, "table[0, 2; 4.5, 6;online_list;,Name".. table.concat(fs, "").."]")
+	table.insert(size, "table[0, 2; 4.5, 6;online_list;,Name".. table.concat(fs, "").."]")
 
   -- Move button zone
   table.insert(size, "button[5,3.5;1.3,0.5;move_right;>>]")
@@ -155,30 +180,31 @@ local function computer_formspec(clicker, course_select, student_select)
   -- Attendance Register zone
 	fs = {}
   table.insert(size, "label[6.5, 1.5;Attendance Register:]")
+	table.insert(size, "tablecolumns[color;text,width=10".. table.concat(fs_col, "")..",width=5]")
+	local fs = {}
+  for i, col in pairs(column_name) do
+		fs[#fs + 1] = ",," .. col.title
+	end
 
-	local selection_id = ""
+	for i, student in pairs(all_attendance_by_course) do
+    local color, value
+    local has_enrolled = check_enorlled(course_select_id, student)
+    color = has_enrolled and "green" or "red"
+		value = has_enrolled and "Yes" or "No"
 
-	if attendance[course_select_id] ~= nil then
-		for i, student in pairs(all_attendance_by_course) do
-	    local color, value
-	    local has_enrolled = check_enorlled(course_select_id, student)
-	    color = has_enrolled and "green" or "red"
-			value = has_enrolled and "Yes" or "No"
+    fs[#fs + 1] = ",,"
+    fs[#fs + 1] = minetest.formspec_escape(student)
 
-	    fs[#fs + 1] = ",,,"
-	    fs[#fs + 1] = color
-	    fs[#fs + 1] = ","
-	    fs[#fs + 1] = minetest.formspec_escape(student)
-		end
-	else
-
+    fs[#fs + 1] = ","
+    fs[#fs + 1] = color
+    fs[#fs + 1] = ","
+    fs[#fs + 1] = minetest.formspec_escape(value)
 	end
 
 	fs[#fs + 1] = ";"
-	fs[#fs + 1] = selection_id
+	fs[#fs + 1] = attendance_student_select_id
 
   table.insert(size, "table[6.5, 2; 4.5, 6;attendance_list;,Name".. table.concat(fs, "").."]")
-	-- minetest.chat_send_player('singleplayer', 'size: '.. table.concat(size,""))
 	-- print('size: '.. table.concat(size,""))
 	return table.concat(size)
 end
@@ -186,47 +212,83 @@ end
 function computer.on_rightclick(pos, node, clicker, itemstack, pointed_thing)
 	local meta = minetest.get_meta(pos)
 	local clicker_name = clicker:get_player_name()
-  load_JsonFile()
+  --load_API()
 	minetest.show_formspec(clicker_name, "attendance_register", computer_formspec(clicker, 1, ''))
 end
 
+function computer.on_use(itemstack, clicker, pointed_thing)
+  load_API()
+end
+
 local function on_player_receive_fields(player, fields, update_callback)
-	update_callback(player)
+	local online_list_evt = minetest.explode_table_event(fields.online_list)
+	local attendance_list_evt = minetest.explode_table_event(fields.attendance_list)
+
+	if fields.online_list then
+		online_student_select_id = ""
+		local i = (online_list_evt.row or 0) - 1
+			if online_list_evt.type == "CHG" and i >= 1  and i <= #attendance then
+				online_student_select_id = online_students[i]
+			end
+
+			update_callback(player)
+			return
+	end
+	print('online_student_select_id: '..online_student_select_id)
+	print('course_select_id: '..course_select_id)
+	for i, x in pairs(fields) do
+		print('fields: '..x)
+	end
+	if fields.attendance_list then
+		attendance_student_select_id = ""
+		local i = (attendance_list_evt.row or 0) - 1
+			if attendance_list_evt.type == "CHG" and i >= 1  and i <= #online_students then
+				attendance_student_select_id = online_students[i]
+				minetest.chat_send_player('singleplayer', 'attendance_student_select_id: '..attendance_student_select_id)
+
+			end
+			update_callback(player)
+			return
+	end
+
+	if fields.move_right then
+		if online_student_select_id ~= "" then
+			save_attendance(course_select_id, online_student_select_id)
+			attendance[course_select_id] = attendance[course_select_id] .. ','..online_student_select_id
+			online_student_select_id = ""
+		end
+		update_callback(player)
+		return
+	end
+
+	if fields.move_left then
+		minetest.chat_send_player('singleplayer', 'attendance_student_select_id: '..attendance_student_select_id)
+		if attendance_student_select_id ~= "" then
+			remove_attendance(course_select_id, attendance_student_select_id)
+			-- online_list[course_select_id] = online_list[course_select_id] .. ','..attendance_student_select_id
+			attendance_student_select_id = ""
+		end
+		update_callback(player)
+		return
+	end
+
+	if fields.course_select then
+		online_student_select_id = ""
+		for i, courses in pairs(courses) do
+			if courses == fields.course_select then
+				course_select_id = i
+			end
+		end
+		update_callback(player)
+		return
+	end
+
 end
 
 minetest.register_on_player_receive_fields(function(player, formname, fields)
   local player_name = player:get_player_name()
 	if formname ~= "attendance_register" then
 		return
-	end
-	local evt = minetest.explode_table_event(fields.course_select)
-
-	if fields.course_select then
-		for i, courses in pairs(courses) do
-			if courses == fields.course_select then
-				course_select_id = i
-			end
-		end
-	end
-
-	-- local course_select_id
-	if fields.online_list then
-		student_select_id = ""
-		local evt = minetest.explode_table_event(fields.online_list)
-		local i = (evt.row or 0) - 1
-			if evt.type == "CHG" and i >= 1  and i <= #online_students then
-				student_select_id = online_students[i]
-				-- minetest.chat_send_player('singleplayer',"student_select_id: "..student_select_id )
-			end
-	end
-
-	if fields.move_right then
-		-- minetest.chat_send_player('singleplayer',"move right: "..course_select_id ..', '..student_select_id )
-		if student_select_id ~= "" then
-			attendance[course_select_id] = attendance[course_select_id] .. ','..student_select_id
-			student_select_id = ""
-			save_attendance()
-		end
 	end
 
 	on_player_receive_fields(player, fields, function(player)
@@ -245,6 +307,6 @@ minetest.register_node('university:computer', {
 	inventory_image = "computer_inv.png",
 	wield_image = "computer_inv.png",
 	buildable_to = false,
-
+	on_use = computer.on_use,
   on_rightclick = computer.on_rightclick,
 })

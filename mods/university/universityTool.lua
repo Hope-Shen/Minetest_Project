@@ -1,6 +1,6 @@
 minetest.register_node("university:wood_table", {
 	description = "This is wood_table",
-tiles = {"table_wood.png"},
+	tiles = {"table_wood.png"},
 	groups = {oddly_breakable_by_hand=3},
 	drawtype = "nodebox",
 	paramtype = "light",
@@ -13,7 +13,7 @@ tiles = {"table_wood.png"},
 			{0.4375, -0.5, -0.4375, 0.5, 0.5, -0.5}, -- wood_table_Right_Bottom
 			{0.4375, -0.5, 0.5, 0.5, 0.5, 0.4375}, -- wood_table_Right_Top
 		}
-	},
+	}
 })
 
 minetest.register_node('university:lobby_table', {
@@ -244,7 +244,7 @@ minetest.register_on_player_receive_fields(function(player, formname, fields)
 	local p2 = node.param2 - 2
 	local	sign_pos = wall_sign_positions
 
-        if not p2 or p2 > 3 or p2 < 0 then
+	if not p2 or p2 > 3 or p2 < 0 then
 		return
 	end
 
@@ -334,5 +334,5 @@ minetest.register_node("university:whiteboard", {
 	after_place_node = whiteboard.after_place,
 	on_rightclick = whiteboard.on_rightclick,
 	on_destruct = whiteboard.on_destruct,
-	on_dig = whiteboard.on_dig
+	-- on_dig = whiteboard.on_dig
 })
