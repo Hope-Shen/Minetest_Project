@@ -12,6 +12,7 @@ local column_name = {
 local courses = {}
 local enrolled = {}
 local attendance = {}
+local attendance_by_course_student = {}
 
 local whitelist = {}
 local world_path = minetest.get_worldpath()
@@ -27,7 +28,8 @@ local function load_API()
 	enrolled = {}
 	attendance = {}
 	http_api.fetch({
-		url = "https://localhost:44357/api/course", method="GET"
+		url = api_serverIP .. "course",
+		method="GET"
 	}, function (res)
 		local api_content = minetest.parse_json(minetest.parse_json(dump(res.data)))
 		for i, j_str in pairs(api_content) do
@@ -35,7 +37,7 @@ local function load_API()
 		end
 	end)
 	http_api.fetch({
-		url = "https://localhost:44357/api/enrollment",
+		url = api_serverIP .. "enrollment",
 		method="GET"
 	}, function (res)
 		local api_content = minetest.parse_json(minetest.parse_json(dump(res.data)))
@@ -44,7 +46,7 @@ local function load_API()
 		end
 	end)
 	http_api.fetch({
-		url = "https://localhost:44357/api/attendance",
+		url = api_serverIP .. "attendance",
 		method="GET"
 	}, function (res)
 		local api_content = minetest.parse_json(minetest.parse_json(dump(res.data)))
@@ -57,33 +59,33 @@ end
 -- Write student attendance
 local function save_attendance(course_select_id, online_student_select_id)
 	local post_data= "{\"courseId\":\"".. courses[course_select_id]:sub(1, 8) .."\",\"studentId\":\"".. string.split(online_student_select_id, "-")[1] .."\"}"
-	-- http_api.fetch({
-	-- 	url = "https://localhost:44357/api/attendance/",
-	-- 	method="POST",
-	-- 	extra_headers = { "Content-Type: application/json" },
-	-- 	data = post_data
-	-- }, function (res)
-	-- 	-- print(dump(res))
-	-- 	if res.succeeded then
-	-- 		print('[Success] Take attendance: '.. online_student_select_id ..', course: '.. courses[course_select_id])
-	-- 	end
-	-- end)
+	http_api.fetch({
+		url = "https://localhost:44357/api/attendance/",
+		method="POST",
+		extra_headers = { "Content-Type: application/json" },
+		data = post_data
+	}, function (res)
+		-- print(dump(res))
+		if res.succeeded then
+			print('[Success] Take attendance: '.. online_student_select_id ..', course: '.. courses[course_select_id])
+		end
+	end)
 end
 
 -- Remove student attendance
 local function remove_attendance(course_select_id, attendance_student_select_id)
 	local post_data= "{\"courseId\":\"".. courses[course_select_id]:sub(1, 8) .."\",\"studentId\":\"".. string.split(attendance_student_select_id, "-")[1] .."\",\"Date\":\""..os.date('%Y-%m-%d').."\"}"
-	-- http_api.fetch({
-	-- 	url = "https://localhost:44357/api/attendance/",
-	-- 	method="DELETE",
-	-- 	extra_headers = { "Content-Type: application/json" },
-	-- 	data = post_data
-	-- }, function (res)
+	http_api.fetch({
+		url = "https://localhost:44357/api/attendance/",
+		method="DELETE",
+		extra_headers = { "Content-Type: application/json" },
+		data = post_data
+	}, function (res)
 	-- 	print(dump(res))
-	-- 	if res.succeeded then
-	-- 		print('[Success] Remove attendance: '.. online_student_select_id ..', course: '.. courses[course_select_id])
-	-- 	end
-	-- end)
+		if res.succeeded then
+			print('[Success] Remove attendance: '.. attendance_student_select_id ..', course: '.. courses[course_select_id])
+		end
+	end)
 end
 
 local function check_enorlled(course_select_id, student)
@@ -95,7 +97,6 @@ local function check_enorlled(course_select_id, student)
 	    end
 	  end
 	end
-
   return false
 end
 
@@ -138,9 +139,10 @@ local function computer_formspec(clicker, course_select, student_select)
   for i, col in pairs(column_name) do
 		fs[#fs + 1] = ",," .. col.title
 	end
-	local all_attendance_by_course = {}
+
+	attendance_by_course_student = {}
 	if attendance[course_select_id] ~= nil then
-		all_attendance_by_course = string.split(attendance[course_select_id], ",")
+		attendance_by_course_student = string.split(attendance[course_select_id], ",")
 	end
 
   -- Get online students who is not register attendance
@@ -186,7 +188,7 @@ local function computer_formspec(clicker, course_select, student_select)
 		fs[#fs + 1] = ",," .. col.title
 	end
 
-	for i, student in pairs(all_attendance_by_course) do
+	for i, student in pairs(attendance_by_course_student) do
     local color, value
     local has_enrolled = check_enorlled(course_select_id, student)
     color = has_enrolled and "green" or "red"
@@ -205,7 +207,6 @@ local function computer_formspec(clicker, course_select, student_select)
 	fs[#fs + 1] = attendance_student_select_id
 
   table.insert(size, "table[6.5, 2; 4.5, 6;attendance_list;,Name".. table.concat(fs, "").."]")
-	-- print('size: '.. table.concat(size,""))
 	return table.concat(size)
 end
 
@@ -224,28 +225,23 @@ local function on_player_receive_fields(player, fields, update_callback)
 	local online_list_evt = minetest.explode_table_event(fields.online_list)
 	local attendance_list_evt = minetest.explode_table_event(fields.attendance_list)
 
+	--select online list (left column) action
 	if fields.online_list then
 		online_student_select_id = ""
 		local i = (online_list_evt.row or 0) - 1
-			if online_list_evt.type == "CHG" and i >= 1  and i <= #attendance then
+			if online_list_evt.type == "CHG" and i >= 1  and i <= #online_students then
 				online_student_select_id = online_students[i]
 			end
-
 			update_callback(player)
 			return
 	end
-	print('online_student_select_id: '..online_student_select_id)
-	print('course_select_id: '..course_select_id)
-	for i, x in pairs(fields) do
-		print('fields: '..x)
-	end
+
+	--select attendance list (right column) action
 	if fields.attendance_list then
 		attendance_student_select_id = ""
 		local i = (attendance_list_evt.row or 0) - 1
-			if attendance_list_evt.type == "CHG" and i >= 1  and i <= #online_students then
-				attendance_student_select_id = online_students[i]
-				minetest.chat_send_player('singleplayer', 'attendance_student_select_id: '..attendance_student_select_id)
-
+			if attendance_list_evt.type == "CHG" and i >= 1  and i <= #attendance_by_course_student then
+				attendance_student_select_id = attendance_by_course_student[i]
 			end
 			update_callback(player)
 			return
@@ -254,18 +250,33 @@ local function on_player_receive_fields(player, fields, update_callback)
 	if fields.move_right then
 		if online_student_select_id ~= "" then
 			save_attendance(course_select_id, online_student_select_id)
+			if string.find(attendance[course_select_id], ",") then
 			attendance[course_select_id] = attendance[course_select_id] .. ','..online_student_select_id
+			else
+				attendance[course_select_id] = online_student_select_id
+			end
+
 			online_student_select_id = ""
 		end
+
 		update_callback(player)
 		return
 	end
 
 	if fields.move_left then
-		minetest.chat_send_player('singleplayer', 'attendance_student_select_id: '..attendance_student_select_id)
 		if attendance_student_select_id ~= "" then
 			remove_attendance(course_select_id, attendance_student_select_id)
-			-- online_list[course_select_id] = online_list[course_select_id] .. ','..attendance_student_select_id
+
+			local trim = ""
+			if string.find(attendance[course_select_id], ",") then
+				trim = "%,"..string.split(attendance_student_select_id, "-")[1]..'%-'..string.split(attendance_student_select_id, "-")[2]
+				attendance[course_select_id] = attendance[course_select_id]:gsub(trim,"")
+			else
+				trim = string.split(attendance_student_select_id, "-")[1]..'%-'..string.split(attendance_student_select_id, "-")[2]
+				-- attendance[course_select_id] = ""
+			end
+			attendance[course_select_id] = attendance[course_select_id]:gsub(trim,"")
+
 			attendance_student_select_id = ""
 		end
 		update_callback(player)
@@ -273,16 +284,17 @@ local function on_player_receive_fields(player, fields, update_callback)
 	end
 
 	if fields.course_select then
+		course_select_id = ""
 		online_student_select_id = ""
 		for i, courses in pairs(courses) do
 			if courses == fields.course_select then
 				course_select_id = i
 			end
 		end
+
 		update_callback(player)
 		return
 	end
-
 end
 
 minetest.register_on_player_receive_fields(function(player, formname, fields)
