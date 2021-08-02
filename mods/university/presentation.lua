@@ -1,8 +1,8 @@
 local mod_path = minetest.get_modpath("university")
 
 local presentation = {}
-
 ppt_course_exist = {}
+
 local files = minetest.get_dir_list(mod_path.."/textures")
 table.sort(files)
 local temp = ""
@@ -19,7 +19,6 @@ for i, file in pairs(files) do
     end
   end
 end
-
 
 local function get_presentation(number, ppt_course)
   local file, err = io.open(mod_path.."/textures/ppt_"..ppt_course ..'_'..number..".png","r")
@@ -53,6 +52,14 @@ for i, ppt_course in pairs(ppt_course_exist) do
     local pic_pos_x = ((pictexture_pix - pic_width) / 2)
     local pic_pos_y = ((pictexture_pix - pic_height) / 2)
 
+    function presentation.on_place(itemstack, clicker, pointed_thing)
+      if not check_teacher_priv(clicker) then
+        minetest.chat_send_player(clicker:get_player_name(), "You don't have permission. This function only for teacher.")
+        return
+      end
+      return minetest.item_place(itemstack, clicker, pointed_thing)
+    end
+
     function presentation.on_rightclick(pos, node, clicker, itemstack, pointed_thing)
       local length = string.len (node.name)
   		local number = string.sub (node.name, 25, length)
@@ -74,8 +81,7 @@ for i, ppt_course in pairs(ppt_course_exist) do
   		minetest.env:set_node(pos, node)
     end
 
-
-    minetest.register_node("university:ppt_"..ppt_course.."_"..n.."", {
+    minetest.register_node("university:ppt_"..ppt_course.."_"..n, {
     	description = "ppt #"..ppt_course.."_"..n.."",
     	drawtype = "signlike",
       tiles = {
@@ -91,6 +97,7 @@ for i, ppt_course in pairs(ppt_course_exist) do
     		type = "wallmounted",
     	},
     	groups = groups,
+      on_place = presentation.on_place,
     	on_rightclick = presentation.on_rightclick,
     })
   end

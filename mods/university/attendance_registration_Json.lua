@@ -1,7 +1,3 @@
---Set up default privileges
-minetest.register_privilege("teacher", {
-	give_to_singleplayer = false
-})
 
 -- local http_api = minetest.request_http_api()
 -- if not http_api then

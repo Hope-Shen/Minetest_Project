@@ -1,8 +1,3 @@
---Set up default privileges
-minetest.register_privilege("teacher", {
-	give_to_singleplayer = false
-})
-
 local computer = {}
 local column_name = {
 	{
@@ -21,6 +16,7 @@ local online_students = {}
 local course_select_id = ""
 local online_student_select_id = ""
 local attendance_student_select_id = ""
+local getAPI_status = false
 
 -- Read API
 local function load_API()
@@ -54,6 +50,7 @@ local function load_API()
 			attendance[#attendance + 1 ] = j_str.studentName
 		end
 	end)
+	getAPI_status = true
 end
 
 -- Write student attendance
@@ -81,7 +78,7 @@ local function remove_attendance(course_select_id, attendance_student_select_id)
 		extra_headers = { "Content-Type: application/json" },
 		data = post_data
 	}, function (res)
-	-- 	print(dump(res))
+		-- print(dump(res))
 		if res.succeeded then
 			print('[Success] Remove attendance: '.. attendance_student_select_id ..', course: '.. courses[course_select_id])
 		end
@@ -114,6 +111,16 @@ end
 
 local function computer_formspec(clicker, course_select, student_select)
 	local size = { "size[11.5,8]" }
+
+	-- Check the privilege
+	if not check_teacher_priv(clicker) then
+		return "size[7,1.5] label[0.5,0;Access denied. This function only for teacher.] button_exit[2.5,1;2,0.5;exit;Exit]"
+	end
+
+	-- Check user has right clicked to download the data from API
+	if not getAPI_status then
+		return "size[10,1.5] label[0.5,0;Please left click to download the data or there is no course had been found.] button_exit[4,1;2,0.5;exit;Exit]"
+	end
 
   course_select_id = course_select ~= '' and course_select or 1
   table.insert(size, "label[0, 0.5;Course:]")
@@ -213,11 +220,14 @@ end
 function computer.on_rightclick(pos, node, clicker, itemstack, pointed_thing)
 	local meta = minetest.get_meta(pos)
 	local clicker_name = clicker:get_player_name()
-  --load_API()
 	minetest.show_formspec(clicker_name, "attendance_register", computer_formspec(clicker, 1, ''))
 end
 
 function computer.on_use(itemstack, clicker, pointed_thing)
+	if not check_teacher_priv(clicker) then
+		minetest.chat_send_player(clicker:get_player_name(), "You don't have permission. This function only for teacher.")
+		return
+	end
   load_API()
 end
 
@@ -251,7 +261,7 @@ local function on_player_receive_fields(player, fields, update_callback)
 		if online_student_select_id ~= "" then
 			save_attendance(course_select_id, online_student_select_id)
 			if string.find(attendance[course_select_id], ",") then
-			attendance[course_select_id] = attendance[course_select_id] .. ','..online_student_select_id
+				attendance[course_select_id] = attendance[course_select_id] .. ','..online_student_select_id
 			else
 				attendance[course_select_id] = online_student_select_id
 			end

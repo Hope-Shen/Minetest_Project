@@ -13,3 +13,13 @@ if not http_api then
 	print("ERROR: in minetest.conf, this mod must be in secure.http_mods!")
 end
 api_serverIP = "https://localhost:44357/api/"
+
+--Set up default privileges
+minetest.register_privilege("teacher", {
+	description = "Teacher privilege for classroom mod",
+	give_to_singleplayer = false
+})
+
+function check_teacher_priv(player)
+	return minetest.check_player_privs(player:get_player_name(), { teacher = true })
+end
