@@ -57,12 +57,12 @@ end
 local function save_attendance(course_select_id, online_student_select_id)
 	local post_data= "{\"courseId\":\"".. courses[course_select_id]:sub(1, 8) .."\",\"studentId\":\"".. string.split(online_student_select_id, "-")[1] .."\"}"
 	http_api.fetch({
-		url = "https://localhost:44357/api/attendance/",
+		url = api_serverIP .. "attendance",
 		method="POST",
 		extra_headers = { "Content-Type: application/json" },
 		data = post_data
 	}, function (res)
-		-- print(dump(res))
+		-- print('save_attendance: '..dump(res))
 		if res.succeeded then
 			print('[Success] Take attendance: '.. online_student_select_id ..', course: '.. courses[course_select_id])
 		end
@@ -73,12 +73,12 @@ end
 local function remove_attendance(course_select_id, attendance_student_select_id)
 	local post_data= "{\"courseId\":\"".. courses[course_select_id]:sub(1, 8) .."\",\"studentId\":\"".. string.split(attendance_student_select_id, "-")[1] .."\",\"Date\":\""..os.date('%Y-%m-%d').."\"}"
 	http_api.fetch({
-		url = "https://localhost:44357/api/attendance/",
+		url = api_serverIP .. "attendance",
 		method="DELETE",
 		extra_headers = { "Content-Type: application/json" },
 		data = post_data
 	}, function (res)
-		-- print(dump(res))
+		-- print('remove_attendance: '..dump(res))
 		if res.succeeded then
 			print('[Success] Remove attendance: '.. attendance_student_select_id ..', course: '.. courses[course_select_id])
 		end
@@ -155,7 +155,8 @@ local function computer_formspec(clicker, course_select, student_select)
   -- Get online students who is not register attendance
 	online_students = {}
   for i,player in pairs(minetest.get_connected_players()) do
-		if not check_attendant(course_select_id, player:get_player_name()) then
+		if not check_attendant(course_select_id, player:get_player_name()) and
+				not check_teacher_priv(clicker) then
 			  online_students[#online_students + 1] = player:get_player_name()
 		end
   end
