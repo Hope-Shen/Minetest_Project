@@ -6,12 +6,16 @@ minetest.after(1, function()
     url = api_serverIP .. "Student",
     method="GET"
   }, function (res)
-    local api_content = minetest.parse_json(minetest.parse_json(dump(res.data)))
-    for i, j_str in pairs(api_content) do
-      whitlist[#whitlist + 1 ] = j_str.studentId .. '-' .. j_str.studentName
+    -- print('whitelist: '..dump(res))
+    if res.succeeded then
+      local api_content = minetest.parse_json(minetest.parse_json(dump(res.data)))
+      for i, j_str in pairs(api_content) do
+        whitlist[#whitlist + 1 ] = j_str.studentId .. '-' .. j_str.studentName
+      end
+      print("Whitelist has been loaded successfully.")
     end
   end)
-  print("Whitelist has been loaded successfully.")
+
 end)
 
 minetest.register_on_prejoinplayer(function(name)
