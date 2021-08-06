@@ -156,7 +156,7 @@ local function computer_formspec(clicker, course_select, student_select)
 	online_students = {}
   for i,player in pairs(minetest.get_connected_players()) do
 		if not check_attendant(course_select_id, player:get_player_name()) and
-				not check_teacher_priv(clicker) then
+				not check_teacher_priv(player) then
 			  online_students[#online_students + 1] = player:get_player_name()
 		end
   end

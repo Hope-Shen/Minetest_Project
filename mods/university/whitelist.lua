@@ -15,7 +15,6 @@ minetest.after(1, function()
       print("Whitelist has been loaded successfully.")
     end
   end)
-
 end)
 
 minetest.register_on_prejoinplayer(function(name)
