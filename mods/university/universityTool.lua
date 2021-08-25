@@ -327,4 +327,4 @@ minetest.register_node("university:whiteboard", {
 	after_place_node = whiteboard.after_place,
 	on_rightclick = whiteboard.on_rightclick,
 	on_destruct = whiteboard.on_destruct,
-)
+})
