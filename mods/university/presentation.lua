@@ -7,7 +7,7 @@ local files = minetest.get_dir_list(mod_path.."/textures")
 table.sort(files)
 local temp = ""
 for i, file in pairs(files) do
-  if string.match(file, "ppt_") then
+  if string.match(file, "PPT_") then
     if #existing_ppt_course + 1 == 1 then
       temp = file:sub(5, 12)
       existing_ppt_course[#existing_ppt_course + 1] = file:sub(5, 12)
@@ -22,7 +22,7 @@ end
 
 -- Get presentation png
 local function get_presentation(number, ppt_course)
-  local file, err = io.open(mod_path.."/textures/ppt_"..ppt_course ..'_'..number..".png","r")
+  local file, err = io.open(mod_path.."/textures/PPT_"..ppt_course ..'_'..number..".png","r")
 
     if err then return end
     if file ~= nil then
@@ -55,7 +55,7 @@ for i, ppt_course in pairs(existing_ppt_course) do
     local pic_pos_x = ((pictexture_pix - pic_width) / 2)
     local pic_pos_y = ((pictexture_pix - pic_height) / 2)
 
-   -- Place presentation object event
+    -- Place presentation object event
     -- *This function only allows the teacher to operate.Or it will show the deny meeeage.
     function presentation.on_place(itemstack, clicker, pointed_thing)
       if not check_teacher_priv(clicker) then
@@ -83,12 +83,12 @@ for i, ppt_course in pairs(existing_ppt_course) do
   				number = number - 1
   			end
   		end
-  		node.name = "university:ppt_"..ppt_course.."_"..number..""
+  		node.name = "university:PPT_"..ppt_course.."_"..number..""
   		minetest.env:set_node(pos, node)
     end
 
     -- presentation node register
-    minetest.register_node("university:ppt_"..ppt_course.."_"..n, {
+    minetest.register_node("university:PPT_"..ppt_course.."_"..n, {
     	description = "ppt #"..ppt_course.."_"..n.."",
     	drawtype = "signlike",
       tiles = {
