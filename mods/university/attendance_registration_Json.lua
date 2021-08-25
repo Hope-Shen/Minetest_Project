@@ -1,11 +1,3 @@
-
--- local http_api = minetest.request_http_api()
--- if not http_api then
--- 	print("ERROR: in minetest.conf, this mod must be in secure.http_mods!")
--- end
---
-
-
 local computer = {}
 local column_name = {
 	{
@@ -15,14 +7,10 @@ local column_name = {
 local courses = {}
 local enrolled = {}
 local attendance = {}
-
-local whitelist = {}
-local world_path = minetest.get_worldpath()
-
 local online_students = {}
 local course_select_id = ""
 local student_select_id = ""
-
+local world_path = minetest.get_worldpath()
 
 -- Read courses
 local function load_JsonFile()

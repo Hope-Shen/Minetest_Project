@@ -13,6 +13,8 @@ minetest.after(1, function()
         whitlist[#whitlist + 1 ] = j_str.studentId .. '-' .. j_str.studentName
       end
       print("Whitelist has been loaded successfully.")
+    else
+      print("Loading whitelist failed.")
     end
   end)
 end)
@@ -27,5 +29,5 @@ minetest.register_on_prejoinplayer(function(name)
   		return
   	end
   end
-  return "You are not allow to join, please connect your professor."
+  return "You are not allowed to join, please connect with your professor."
 end)

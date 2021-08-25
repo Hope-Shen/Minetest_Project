@@ -1,3 +1,4 @@
+-- wood_table node register
 minetest.register_node("university:wood_table", {
 	description = "This is wood_table",
 	tiles = {"table_wood.png"},
@@ -16,6 +17,7 @@ minetest.register_node("university:wood_table", {
 	}
 })
 
+-- lobby_table node register
 minetest.register_node('university:lobby_table', {
   description = 'This is lobby_table',
   drawtype = 'mesh',
@@ -29,6 +31,7 @@ minetest.register_node('university:lobby_table', {
 	groups = {oddly_breakable_by_hand = 3},
 })
 
+-- blackboard_top node register
 minetest.register_node("university:blackboard_top", {
 	description = "This is top of blackboard",
 	tiles = {"blackboard_top.png"},
@@ -38,6 +41,7 @@ minetest.register_node("university:blackboard_top", {
 	buildable_to = false,
 })
 
+-- blackboard_bottom_chalk node register
 minetest.register_node("university:blackboard_bottom_chalk", {
 	description = "This is bottom of blackboard with chalk",
 	tiles = {"blackboard_bottom_chalk.png"},
@@ -47,6 +51,7 @@ minetest.register_node("university:blackboard_bottom_chalk", {
 	buildable_to = false,
 })
 
+-- blackboard_bottom node register
 minetest.register_node("university:blackboard_bottom", {
 	description = "This is bottom of blackboard",
 	tiles = {"blackboard_bottom.png"},
@@ -56,6 +61,7 @@ minetest.register_node("university:blackboard_bottom", {
 	buildable_to = false,
 })
 
+-- Display whiteboard content
 local floor, pi = math.floor, math.pi
 local vadd = vector.add
 local whiteboard = {}
@@ -103,8 +109,6 @@ local function generate_img_texture(str, row)
 					.. row * whiteboard_setting.row_width .. "=letter_" .. char .. ".png"
 		end
 	end
-
--- minetest.chat_send_player('singleplayer', 'texture_img: '..texture)
 	return texture
 end
 
@@ -118,7 +122,7 @@ local function generate_texture(str)
 			break
 		end
 		local wrap_i = 0
-		local keep_i = 0 -- The last character that was kept
+		local keep_i = 0
 		while wrap_i < #str do
 			wrap_i = find_any(str, wrap_i + 1)
 			if wrap_i > 20 then
@@ -166,12 +170,10 @@ local function generate_texture(str)
 		row = row + 1
 	end
 
-	local empty_row = row < 4 and 1 or 0 -- if row < 4 ? 1 : 0
+	local empty_row = row < 4 and 1 or 0
 	for i, str in pairs(result) do
 		texture = texture .. generate_img_texture(str, i + empty_row)
 	end
-
-	-- minetest.chat_send_player('singleplayer', 'texture: '..texture)
 	return texture
 end
 
@@ -179,6 +181,7 @@ local function objects_inside_radius(p)
 	return minetest.get_objects_inside_radius(p, 0.5)
 end
 
+-- register whiteboard text entity
 minetest.register_entity("university:whiteboard_text_entity", {
 	visual = "upright_sprite",
 	visual_size = {x = 0.7, y = 0.6},
@@ -306,16 +309,6 @@ local function is_owner(pos, name)
 	return false
 end
 
-function whiteboard.on_dig(pos, node, player)
-		local player_name = player:get_player_name()
-		-- Check the placer is the digger
-		if is_owner(pos, player) then
-			minetest.remove_node(pos)
-		else
-			minetest.chat_send_player(player_name, 'You don\'t have privileges to remove this item.')
-		end
-end
-
 minetest.register_node("university:whiteboard", {
 	description = "This is whiteboard",
 	tiles = {"whiteboard.png"},
@@ -327,12 +320,11 @@ minetest.register_node("university:whiteboard", {
 	paramtype2 = "wallmounted",
 	node_box = {
 		type = "wallmounted",
-		wall_side   = {-0.5, -0.3125, -0.4375, -0.4375, 0.3125, 0.4375}, -- Wall
+		wall_side   = {-0.5, -0.3125, -0.4375, -0.4375, 0.3125, 0.4375},
 	},
 	on_rotate = false,
 	buildable_to = false,
 	after_place_node = whiteboard.after_place,
 	on_rightclick = whiteboard.on_rightclick,
 	on_destruct = whiteboard.on_destruct,
-	-- on_dig = whiteboard.on_dig
-})
+)
