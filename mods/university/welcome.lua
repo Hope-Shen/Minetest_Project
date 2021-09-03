@@ -26,7 +26,7 @@ Default controls:
 
 --The information and rule guide.
 help_center.university_guide = [[
-Some information you need to konw (for operation of application)....
+Some information you need to know (for operation of application)....
 ]]
 
 local function fun_formspec(player, page)

@@ -61,7 +61,6 @@ local function save_attendance(course_select_id, online_student_select_id)
 		extra_headers = { "Content-Type: application/json" },
 		data = post_data
 	}, function (res)
-		-- print('save_attendance: '..dump(res))
 		if res.succeeded then
 			print('[Success] Take attendance: '.. online_student_select_id ..', course: '.. courses[course_select_id])
 		end
@@ -79,7 +78,6 @@ local function remove_attendance(course_select_id, attendance_student_select_id)
 		extra_headers = { "Content-Type: application/json" },
 		data = post_data
 	}, function (res)
-		-- print('remove_attendance: '..dump(res))
 		if res.succeeded then
 			print('[Success] Remove attendance: '.. attendance_student_select_id ..', course: '.. courses[course_select_id])
 		end
@@ -240,7 +238,9 @@ function computer.on_use(itemstack, clicker, pointed_thing)
 		minetest.chat_send_player(clicker:get_player_name(), "You don't have permission. This function is only for teachers.")
 		return
 	end
-  load_API()
+		if not getAPI_status then
+  		load_API()
+		end
 end
 
 -- Handling all receiving formspec events calling from minetest.register_on_player_receive_fields
