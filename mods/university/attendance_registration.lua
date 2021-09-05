@@ -24,27 +24,39 @@ local function load_API()
 		url = api_serverIP .. "course",
 		method="GET"
 	}, function (res)
-		local api_content = minetest.parse_json(minetest.parse_json(dump(res.data)))
-		for i, j_str in pairs(api_content) do
-			courses[#courses + 1 ] = j_str.courseId .. ' ' .. j_str.courseName
+		if res.succeeded then
+			local api_content = minetest.parse_json(minetest.parse_json(dump(res.data)))
+			for i, j_str in pairs(api_content) do
+				courses[#courses + 1 ] = j_str.courseId .. ' ' .. j_str.courseName
+			end
+		else
+			minetest.log("Get course API error: " .. dump(res))
 		end
 	end)
 	http_api.fetch({
 		url = api_serverIP .. "enrollment",
 		method="GET"
 	}, function (res)
+		if res.succeeded then
 		local api_content = minetest.parse_json(minetest.parse_json(dump(res.data)))
-		for i, j_str in pairs(api_content) do
-			enrolled[#enrolled + 1 ] = j_str.studentName
+			for i, j_str in pairs(api_content) do
+				enrolled[#enrolled + 1 ] = j_str.studentName
+			end
+		else
+			minetest.log("Get enrollment API error: " .. dump(res))
 		end
 	end)
 	http_api.fetch({
 		url = api_serverIP .. "attendance",
 		method="GET"
 	}, function (res)
-		local api_content = minetest.parse_json(minetest.parse_json(dump(res.data)))
-		for i, j_str in pairs(api_content) do
-			attendance[#attendance + 1 ] = j_str.studentName
+		if res.succeeded then
+			local api_content = minetest.parse_json(minetest.parse_json(dump(res.data)))
+			for i, j_str in pairs(api_content) do
+				attendance[#attendance + 1 ] = j_str.studentName
+			end
+		else
+			minetest.log("Get attendance API error: " .. dump(res))
 		end
 	end)
 	getAPI_status = true
@@ -62,7 +74,9 @@ local function save_attendance(course_select_id, online_student_select_id)
 		data = post_data
 	}, function (res)
 		if res.succeeded then
-			print('[Success] Take attendance: '.. online_student_select_id ..', course: '.. courses[course_select_id])
+			minetest.log('[Success] Take attendance: '.. online_student_select_id ..', course: '.. courses[course_select_id])
+		else
+			minetest.log('[Fail] Take attendance: '.. online_student_select_id ..', course: '.. courses[course_select_id])
 		end
 	end)
 end
@@ -79,7 +93,9 @@ local function remove_attendance(course_select_id, attendance_student_select_id)
 		data = post_data
 	}, function (res)
 		if res.succeeded then
-			print('[Success] Remove attendance: '.. attendance_student_select_id ..', course: '.. courses[course_select_id])
+			minetest.log('[Success] Remove attendance: '.. attendance_student_select_id ..', course: '.. courses[course_select_id])
+		else
+			minetest.log('[Fail] Remove attendance: '.. attendance_student_select_id ..', course: '.. courses[course_select_id])
 		end
 	end)
 end
@@ -238,9 +254,8 @@ function computer.on_use(itemstack, clicker, pointed_thing)
 		minetest.chat_send_player(clicker:get_player_name(), "You don't have permission. This function is only for teachers.")
 		return
 	end
-		if not getAPI_status then
+			getAPI_status = false
   		load_API()
-		end
 end
 
 -- Handling all receiving formspec events calling from minetest.register_on_player_receive_fields
@@ -293,13 +308,19 @@ local function on_player_receive_fields(player, fields, update_callback)
 	if fields.move_left then
 		if attendance_student_select_id ~= "" then
 			remove_attendance(course_select_id, attendance_student_select_id)
-			local trim = ""
+
 			if string.find(attendance[course_select_id], ",") then
-				trim = "%,"..string.split(attendance_student_select_id, "-")[1]..'%-'..string.split(attendance_student_select_id, "-")[2]
+				local remove = string.split(attendance_student_select_id, "-")[1]..'-'..string.split(attendance_student_select_id, "-")[2]
+				local temp = {}
+				for att in string.gmatch(attendance[course_select_id], '([^,]+)') do
+					if att ~= remove then
+					temp[#temp + 1 ] = att
+					end
+				end
+				attendance[course_select_id] = table.concat(temp,",")
 			else
-				trim = string.split(attendance_student_select_id, "-")[1]..'%-'..string.split(attendance_student_select_id, "-")[2]
+				attendance[course_select_id] = ""
 			end
-			attendance[course_select_id] = attendance[course_select_id]:gsub(trim,"")
 			attendance_student_select_id = ""
 		end
 		update_callback(player)
