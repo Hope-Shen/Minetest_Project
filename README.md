@@ -7,7 +7,8 @@ This project aims to create a virtual learning environment(VLE) with four featur
 4. Presentation for teaher provide an in-game slides presentation
 <br>
 
-*The main code is from Minetest (version 5.4.1), this project only creates the "university" mod.
+*The main code is from Minetest (version 5.4.1), this project only creates the "university" mod. <br>
+*This project use Web API to transmit data, the related repository please check [this repository](https://github.com/Hope-Shen/Minetest_Project_WebAPI).
 
 ## Language
 Lua
