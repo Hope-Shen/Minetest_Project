@@ -89,7 +89,7 @@ for i, ppt_course in pairs(existing_ppt_course) do
 
     -- presentation node register
     minetest.register_node("university:PPT_"..ppt_course.."_"..n, {
-    	description = "ppt #"..ppt_course.."_"..n.."",
+    	description = "PPT #"..ppt_course.."_"..n.."",
     	drawtype = "signlike",
       tiles = {
               {name="([combine:"..pictexture_pix.."x"..pictexture_pix..":"..pic_pos_x..","

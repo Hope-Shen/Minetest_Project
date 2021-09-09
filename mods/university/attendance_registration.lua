@@ -1,7 +1,7 @@
 local computer = {}
 local column_name = {
 	{
-		title = "Enroll?",
+		title = "Enrolled?",
 	},
 }
 local courses = {}
