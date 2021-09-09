@@ -31,6 +31,12 @@ secure.http_mods = university
 secure.trusted_mods = university
 ```
 
+Furthermore, this project also uses some open-source packages created by other developers. There are two things you should set up before running this application.<br>
+1. The World Name of this project is “Minetest Classroom" and its settings files can be found in the "~/worlds/Minetest Classroom" folder in the repository. Please also copy this folder to the relative path in your  directory.
+2. Install two packages that are used in this application and enable these two packages in the "Minetest Classroom" world.
+    - skinsdb (https://content.minetest.net/packages/bell07/skinsdb)
+    - morelights (https://content.minetest.net/packages/random_geek/morelights/) 
+
 
 ## User Manual
 ### B.1 Start the Minetest engine server
