@@ -41,10 +41,11 @@ Furthermore, this project also uses some open-source packages created by other d
 ## User Manual
 ### B.1 Start the Minetest engine server
 As an online-platform, the teacher as the admin should start the server with a list of whitelisted users to allow users access. 
-1. Run the Minetest engine server:
+1. Make sure the Web API is running.
+2. Run the Minetest engine server:
 Execute ```~/bin/srartserver.bat``` file by double clicking on the file or run ```minetest.exe --server --worldname <world name>``` in terminal (figure B.1 green box).
-2. Wait for 1 second. The server will load the whitelist. If loaded successfully, the terminal should show a message “Whitelist has been loaded successfully" (figure B.1 red box). Otherwise, please check your Web API connection.
-3. Minetest is started and enabled for users to login.
+3. Wait for 1 second. The server will load the whitelist. If loaded successfully, the terminal should show a message “Whitelist has been loaded successfully" (figure B.1 red box). Otherwise, please check your Web API connection.
+4. Minetest is started and enabled for users to login.
 <figure>
   <figcaption>Figure B.1 Screenshot of running server and whitelist loaded message</figcaption>
   <img
